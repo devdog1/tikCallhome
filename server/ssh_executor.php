@@ -6,8 +6,8 @@ try {
     $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Get all routers
-    $routers = $pdo->query("SELECT * FROM routers")->fetchAll(PDO::FETCH_ASSOC);
+    // Get all adopted routers
+    $routers = $pdo->query("SELECT * FROM routers WHERE adopted = true")->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($routers as $router) {
         echo "Processing router: {$router['serial_number']}\n";
@@ -18,12 +18,14 @@ try {
             LEFT JOIN router_commands rc ON c.id = rc.command_id AND rc.router_id = :router_id
             WHERE rc.id IS NULL AND (
                 c.type = 'generic' OR
+                (c.type = 'group' AND c.target = :group_id) OR
                 (c.type = 'model' AND c.target = :model) OR
                 (c.type = 'serial' AND c.target = :serial_number)
             )
         ");
         $stmt->execute([
             'router_id' => $router['id'],
+            'group_id' => $router['group_id'],
             'model' => $router['model'],
             'serial_number' => $router['serial_number']
         ]);

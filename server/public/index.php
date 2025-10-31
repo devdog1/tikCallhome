@@ -30,28 +30,12 @@ try {
             'id' => $router['id']
         ]);
     } else {
-        // Insert new router
-        $stmt = $pdo->prepare("INSERT INTO routers (serial_number, model, ip_address, last_seen) VALUES (:serial_number, :model, :ip_address, NOW())");
+        // Insert new router with adopted status as false
+        $stmt = $pdo->prepare("INSERT INTO routers (serial_number, model, ip_address, last_seen, adopted) VALUES (:serial_number, :model, :ip_address, NOW(), false)");
         $stmt->execute([
             'serial_number' => $serialNumber,
             'model' => $model,
             'ip_address' => $ipAddress
-        ]);
-        $routerId = $pdo->lastInsertId();
-
-        // Create a one-time command to set the admin password
-        $command = "/user set [find name=admin] password=\"$defaultNewPassword\"";
-        $check_command = "/user get [find name=admin] password"; // This is a simple check
-
-        $stmt = $pdo->prepare("
-            INSERT INTO commands (command, check_command, description, type, target)
-            VALUES (:command, :check_command, :description, 'serial', :target)
-        ");
-        $stmt->execute([
-            'command' => $command,
-            'check_command' => $check_command,
-            'description' => 'Set initial admin password',
-            'target' => $serialNumber
         ]);
     }
 

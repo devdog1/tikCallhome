@@ -1,9 +1,24 @@
+CREATE TABLE groups (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE wifi_configs (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    ssid VARCHAR(255) NOT NULL,
+    security_protocol VARCHAR(50),
+    password TEXT
+);
+
 CREATE TABLE routers (
     id SERIAL PRIMARY KEY,
     serial_number VARCHAR(255) UNIQUE NOT NULL,
     model VARCHAR(255) NOT NULL,
     ip_address VARCHAR(45) NOT NULL,
-    last_seen TIMESTAMP NOT NULL
+    last_seen TIMESTAMP NOT NULL,
+    group_id INTEGER REFERENCES groups(id),
+    adopted BOOLEAN DEFAULT false
 );
 
 CREATE TABLE commands (
@@ -11,8 +26,8 @@ CREATE TABLE commands (
     command TEXT NOT NULL,
     check_command TEXT,
     description TEXT,
-    type VARCHAR(50) NOT NULL, -- generic, model, serial
-    target VARCHAR(255) -- model name or serial number
+    type VARCHAR(50) NOT NULL, -- generic, model, serial, or group
+    target VARCHAR(255) -- model name, serial number, or group id
 );
 
 CREATE TABLE router_commands (
