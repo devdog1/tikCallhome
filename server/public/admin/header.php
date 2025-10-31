@@ -11,9 +11,12 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="index.php">Mikrotik Manager</a>
+    <a class="navbar-brand" href="dashboard.php">Mikrotik Manager</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.php">Dashboard</a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" href="index.php">Routers & Commands</a>
             </li>
@@ -22,6 +25,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="wifi.php">WiFi Configs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="history.php">History</a>
             </li>
         </ul>
     </div>

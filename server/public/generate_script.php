@@ -1,15 +1,16 @@
 <?php
 require_once('../config.php');
 
-if (isset($_GET['serial'])) {
+if (isset($_GET['serial']) && isset($_GET['api_key'])) {
     $serialNumber = $_GET['serial'];
+    $apiKey = $_GET['api_key'];
     try {
         $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // Get the router's details
-        $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial AND adopted = true AND execution_method = 'pull'");
-        $stmt->execute(['serial' => $serialNumber]);
+        // Get the router's details and validate the API key
+        $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial AND api_key = :api_key AND adopted = true AND execution_method = 'pull'");
+        $stmt->execute(['serial' => $serialNumber, 'api_key' => $apiKey]);
         $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($router) {
@@ -44,12 +45,9 @@ if (isset($_GET['serial'])) {
                 } else {
                     $scriptContent .= $command['command'] . "\n";
                 }
-                $logContent .= "INSERT INTO router_commands (router_id, command_id, executed_at) VALUES ({$router['id']}, {$command['id']}, NOW());\n";
-            }
-
-            // Mark commands as executed
-            if (!empty($logContent)) {
-                $pdo->exec(str_replace("\n", " ", $logContent));
+                // Log the command as 'delivered'
+                $stmt = $pdo->prepare("INSERT INTO router_commands (router_id, command_id, executed_at, status) VALUES (:router_id, :command_id, NOW(), 'delivered')");
+                $stmt->execute(['router_id' => $router['id'], 'command_id' => $command['id']]);
             }
 
             // Serve the script as a file

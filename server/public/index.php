@@ -5,6 +5,7 @@ require_once('../config.php');
 // Get data from the request
 $serialNumber = $_GET['serial'] ?? null;
 $model = $_GET['model'] ?? null;
+$apiKey = $_GET['api_key'] ?? null;
 $ipAddress = $_SERVER['REMOTE_ADDR'];
 
 if (!$serialNumber || !$model) {
@@ -18,11 +19,17 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Check if the router exists
-    $stmt = $pdo->prepare("SELECT id FROM routers WHERE serial_number = :serial_number");
+    $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial_number");
     $stmt->execute(['serial_number' => $serialNumber]);
-    $router = $stmt->fetch();
+    $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($router) {
+        // If router exists, it must have a valid API key to check in
+        if (empty($router['api_key']) || $router['api_key'] !== $apiKey) {
+            http_response_code(401);
+            echo "Unauthorized.";
+            exit;
+        }
         // Update existing router
         $stmt = $pdo->prepare("UPDATE routers SET ip_address = :ip_address, last_seen = NOW() WHERE id = :id");
         $stmt->execute([

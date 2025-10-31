@@ -3,6 +3,8 @@
 # --- Configuration ---
 # Set the URL of your call-home server.
 :local serverUrl "http://your-call-home-server.com/public/index.php"
+# Set the API Key for this router (leave blank for first check-in).
+:local apiKey ""
 # Set the IP address or domain of your call-home server for the firewall rule.
 :local serverAddress "your-call-home-server.com"
 # ---------------------
@@ -12,9 +14,9 @@
 :local routerModel [/system routerboard get model]
 
 # Build the call-home URL
-:local callHomeUrl "$serverUrl?serial=$serialNumber&model=$routerModel"
+:local callHomeUrl "$serverUrl?serial=$serialNumber&model=$routerModel&api_key=$apiKey"
 
-# Call home to register the router
+# Call home to register or update the router
 /tool fetch url=$callHomeUrl keep-result=no
 
 # --- Firewall Rule for SSH Access ---

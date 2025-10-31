@@ -19,7 +19,8 @@ CREATE TABLE routers (
     last_seen TIMESTAMP NOT NULL,
     group_id INTEGER REFERENCES groups(id),
     adopted BOOLEAN DEFAULT false,
-    execution_method VARCHAR(4) DEFAULT 'push' -- 'push' or 'pull'
+    execution_method VARCHAR(4) DEFAULT 'push', -- 'push' or 'pull'
+    api_key VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE commands (
@@ -35,5 +36,7 @@ CREATE TABLE router_commands (
     id SERIAL PRIMARY KEY,
     router_id INTEGER REFERENCES routers(id),
     command_id INTEGER REFERENCES commands(id),
-    executed_at TIMESTAMP
+    executed_at TIMESTAMP,
+    status VARCHAR(20), -- e.g., 'success', 'failure', 'delivered'
+    output TEXT
 );

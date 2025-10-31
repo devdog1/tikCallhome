@@ -71,6 +71,7 @@ try {
                 <tr>
                     <th>Serial Number</th>
                     <th>Model</th>
+                    <th>API Key</th>
                     <th>Current Group</th>
                     <th>Execution Method</th>
                     <th>Assign to Group</th>
@@ -81,6 +82,7 @@ try {
                 <tr>
                     <td><?= htmlspecialchars($router['serial_number']) ?></td>
                     <td><?= htmlspecialchars($router['model']) ?></td>
+                    <td><code><?= htmlspecialchars($router['api_key']) ?></code></td>
                     <td><?= htmlspecialchars($router['group_name'] ?? 'None') ?></td>
                     <td>
                         <form action="groups.php" method="post" class="form-inline">

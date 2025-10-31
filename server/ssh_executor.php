@@ -90,12 +90,20 @@ try {
             $stream = ssh2_exec($connection, $command['command']);
             stream_set_blocking($stream, true);
             $output = stream_get_contents($stream);
+            $errorStream = ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
+            stream_set_blocking($errorStream, true);
+            $errorOutput = stream_get_contents($errorStream);
+
+            $status = empty($errorOutput) ? 'success' : 'failure';
+            $logOutput = empty($errorOutput) ? $output : $errorOutput;
 
             // Log the command execution
-            $stmt = $pdo->prepare("INSERT INTO router_commands (router_id, command_id, executed_at) VALUES (:router_id, :command_id, NOW())");
+            $stmt = $pdo->prepare("INSERT INTO router_commands (router_id, command_id, executed_at, status, output) VALUES (:router_id, :command_id, NOW(), :status, :output)");
             $stmt->execute([
                 'router_id' => $router['id'],
-                'command_id' => $command['id']
+                'command_id' => $command['id'],
+                'status' => $status,
+                'output' => $logOutput
             ]);
         }
     }

@@ -9,9 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // Mark the router as adopted
-        $stmt = $pdo->prepare("UPDATE routers SET adopted = true WHERE id = :id");
-        $stmt->execute(['id' => $routerId]);
+        // Generate a unique API key
+        $apiKey = bin2hex(random_bytes(16));
+
+        // Mark the router as adopted and save the API key
+        $stmt = $pdo->prepare("UPDATE routers SET adopted = true, api_key = :api_key WHERE id = :id");
+        $stmt->execute(['api_key' => $apiKey, 'id' => $routerId]);
 
         // Get the router's serial number
         $stmt = $pdo->prepare("SELECT serial_number FROM routers WHERE id = :id");
