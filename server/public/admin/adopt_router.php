@@ -16,12 +16,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("UPDATE routers SET adopted = true, api_key = :api_key WHERE id = :id");
         $stmt->execute(['api_key' => $apiKey, 'id' => $routerId]);
 
-        // Get the router's serial number
-        $stmt = $pdo->prepare("SELECT serial_number FROM routers WHERE id = :id");
+        // Get the router's full details
+        $stmt = $pdo->prepare("SELECT * FROM routers WHERE id = :id");
         $stmt->execute(['id' => $routerId]);
         $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($router) {
+            // If the router is in push mode, SSH in and inject the API key
+            if ($router['execution_method'] == 'push') {
+                $connection = ssh2_connect($router['ip_address'], 22);
+                if ($connection) {
+                    foreach ($sshCredentials as $cred) {
+                        if (ssh2_auth_password($connection, $cred['user'], $cred['pass'])) {
+                            $command = "
+                                :global content [/file get [find name=call_home.rsc] contents];
+                                :global apiKeyLine [:find \$content \":local apiKey\"];
+                                :global part1 [:pick \$content 0 \$apiKeyLine];
+                                :global part2 [:pick \$content ([:find \$content \"\\n\" \$apiKeyLine]) ([:len \$content])];
+                                /file set [find name=call_home.rsc] contents=(\$part1 . \":local apiKey \\\"$apiKey\\\"\" . \$part2);
+                            ";
+                            ssh2_exec($connection, $command);
+                            break;
+                        }
+                    }
+                }
+            }
+
             // Create the initial password command
             $command = "/user set [find name=admin] password=\"$defaultNewPassword\"";
             $check_command = "/user get [find name=admin] password"; // Simple check

@@ -1,19 +1,27 @@
 <?php
 require_once('../config.php');
 
-if (isset($_GET['serial']) && isset($_GET['api_key'])) {
+if (isset($_GET['serial'])) {
     $serialNumber = $_GET['serial'];
-    $apiKey = $_GET['api_key'];
+    $apiKey = $_GET['api_key'] ?? null;
     try {
         $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // Get the router's details and validate the API key
-        $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial AND api_key = :api_key AND adopted = true AND execution_method = 'pull'");
-        $stmt->execute(['serial' => $serialNumber, 'api_key' => $apiKey]);
+        // Find the router by serial number
+        $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial AND adopted = true AND execution_method = 'pull'");
+        $stmt->execute(['serial' => $serialNumber]);
         $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($router) {
+            $firstPull = empty($router['api_key']);
+            // If it's not the first pull, the API key must be valid
+            if (!$firstPull && $router['api_key'] !== $apiKey) {
+                http_response_code(401);
+                echo "# Unauthorized.";
+                exit;
+            }
+
             // Get all applicable, unexecuted commands
             $stmt = $pdo->prepare("
                 SELECT c.* FROM commands c
@@ -35,7 +43,20 @@ if (isset($_GET['serial']) && isset($_GET['api_key'])) {
 
             // Start generating the script
             $scriptContent = "# Mikrotik Command Script generated on " . date('Y-m-d H:i:s') . "\n";
-            $logContent = "";
+
+            // If it's the first pull, inject the API key into the script
+            if ($firstPull) {
+                $newApiKey = bin2hex(random_bytes(16));
+                $stmt = $pdo->prepare("UPDATE routers SET api_key = :api_key WHERE id = :id");
+                $stmt->execute(['api_key' => $newApiKey, 'id' => $router['id']]);
+                $scriptContent .= "# --- API Key Configuration ---\n";
+                $scriptContent .= ":global content [/file get [find name=call_home_pull.rsc] contents];\n";
+                $scriptContent .= ":global apiKeyLine [:find \$content \":local apiKey\"];\n";
+                $scriptContent .= ":global part1 [:pick \$content 0 \$apiKeyLine];\n";
+                $scriptContent .= ":global part2 [:pick \$content ([:find \$content \"\\n\" \$apiKeyLine]) ([:len \$content])];\n";
+                $scriptContent .= "/file set [find name=call_home_pull.rsc] contents=(\$part1 . \":local apiKey \\\"$newApiKey\\\"\" . \$part2);\n";
+                $scriptContent .= "# ---------------------------\n\n";
+            }
 
             foreach ($commands as $command) {
                 if (!empty($command['check_command'])) {

@@ -24,8 +24,8 @@ try {
     $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($router) {
-        // If router exists, it must have a valid API key to check in
-        if (empty($router['api_key']) || $router['api_key'] !== $apiKey) {
+        // If router is adopted, it must have a valid API key to check in
+        if ($router['adopted'] && (empty($router['api_key']) || $router['api_key'] !== $apiKey)) {
             http_response_code(401);
             echo "Unauthorized.";
             exit;
