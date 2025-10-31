@@ -9,7 +9,7 @@ try {
     // Check if a specific router ID was passed as a command-line argument
     $routerId = $argv[1] ?? null;
 
-    $query = "SELECT * FROM routers WHERE adopted = true";
+    $query = "SELECT * FROM routers WHERE adopted = true AND execution_method = 'push'";
     if ($routerId) {
         $query .= " AND id = :router_id";
     }

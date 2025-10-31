@@ -18,7 +18,8 @@ CREATE TABLE routers (
     ip_address VARCHAR(45) NOT NULL,
     last_seen TIMESTAMP NOT NULL,
     group_id INTEGER REFERENCES groups(id),
-    adopted BOOLEAN DEFAULT false
+    adopted BOOLEAN DEFAULT false,
+    execution_method VARCHAR(4) DEFAULT 'push' -- 'push' or 'pull'
 );
 
 CREATE TABLE commands (

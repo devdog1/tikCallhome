@@ -20,7 +20,10 @@ This system provides a way to centrally manage Mikrotik routers. It allows route
     *   Set up a cron job to run `server/ssh_executor.php` periodically.
 
 2.  **Configure your Mikrotik routers:**
-    *   Edit the `mikrotik/call_home.rsc` script and set the `$serverUrl` and `$serverAddress` variables to point to your server.
+    *   Choose the correct script for your router's execution method ('push' or 'pull').
+    *   For the **push** method, use `mikrotik/call_home.rsc`.
+    *   For the **pull** method, use `mikrotik/call_home_pull.rsc`.
+    *   Edit the chosen script and set the `$serverUrl` and `$serverAddress` variables to point to your server.
     *   Upload the script to your routers and schedule it to run periodically.
 
 3.  **Manage commands:**
