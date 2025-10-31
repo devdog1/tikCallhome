@@ -22,6 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($router) {
+            // Check if the router's group has a base template
+            if ($router['group_id']) {
+                $stmt = $pdo->prepare("SELECT t.content, t.name FROM groups g JOIN config_templates t ON g.base_template_id = t.id WHERE g.id = :group_id");
+                $stmt->execute(['group_id' => $router['group_id']]);
+                $template = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($template) {
+                    // Create a command from the template
+                    $stmt = $pdo->prepare("INSERT INTO commands (command, description, type, target) VALUES (:command, :desc, 'serial', :target)");
+                    $stmt->execute(['command' => $template['content'], 'desc' => "Base Template: {$template['name']}", 'target' => $router['serial_number']]);
+                }
+            }
+
             // If the router is in push mode, SSH in and inject the API key
             if ($router['execution_method'] == 'push') {
                 $connection = ssh2_connect($router['ip_address'], 22);

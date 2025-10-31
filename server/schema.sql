@@ -1,6 +1,15 @@
+CREATE TABLE config_templates (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    content TEXT NOT NULL,
+    workflow_type VARCHAR(20) DEFAULT 'incremental' -- 'incremental' or 'complete'
+);
+
 CREATE TABLE groups (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE
+    name VARCHAR(255) NOT NULL UNIQUE,
+    base_template_id INTEGER REFERENCES config_templates(id)
 );
 
 CREATE TABLE wifi_configs (

@@ -27,6 +27,9 @@
                 <a class="nav-link" href="wifi.php">WiFi Configs</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="templates.php">Templates</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="history.php">History</a>
             </li>
         </ul>
