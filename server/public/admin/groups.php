@@ -1,19 +1,18 @@
 <?php
-// Include the configuration file
 require_once('../../config.php');
+include('header.php');
 
 try {
     $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Handle form submissions for creating groups and assigning routers
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['add_group'])) {
             $stmt = $pdo->prepare("INSERT INTO groups (name) VALUES (:name)");
             $stmt->execute(['name' => $_POST['group_name']]);
         } elseif (isset($_POST['assign_router'])) {
             $stmt = $pdo->prepare("UPDATE routers SET group_id = :group_id WHERE id = :router_id");
-            $stmt->execute(['group_id' => $_POST['group_id'], 'router_id' => $_POST['router_id']]);
+            $stmt->execute(['group_id' => $_POST['group_id'] ?: null, 'router_id' => $_POST['router_id']]);
         }
         header("Location: groups.php");
         exit;
@@ -26,60 +25,80 @@ try {
     die("Database error: " . $e->getMessage());
 }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Group Management</title>
-</head>
-<body>
-    <h1>Mikrotik Management</h1>
-    <hr>
-    <h2><a href="index.php">Routers & Commands</a> | <a href="groups.php">Groups</a> | <a href="wifi.php">WiFi Configs</a></h2>
-    <hr>
 
-    <h2>Create New Group</h2>
-    <form action="groups.php" method="post">
-        <label for="group_name">Group Name:</label>
-        <input type="text" id="group_name" name="group_name" required>
-        <input type="submit" name="add_group" value="Create Group">
-    </form>
+<div class="row">
+    <div class="col-md-6">
+        <h2>Create New Group</h2>
+        <form action="groups.php" method="post">
+            <div class="form-group">
+                <label for="group_name">Group Name:</label>
+                <input type="text" id="group_name" name="group_name" class="form-control" required>
+            </div>
+            <button type="submit" name="add_group" class="btn btn-primary">Create Group</button>
+        </form>
 
-    <h2>Existing Groups</h2>
-    <ul>
-        <?php foreach ($groups as $group): ?>
-            <li><?= htmlspecialchars($group['name']) ?></li>
-        <?php endforeach; ?>
-    </ul>
+        <h2 class="mt-4">Existing Groups</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Group Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($groups as $group): ?>
+                <tr>
+                    <td><?= htmlspecialchars($group['name']) ?></td>
+                    <td>
+                        <a href="edit_group.php?id=<?= $group['id'] ?>" class="btn btn-primary btn-sm">Edit</a>
+                        <a href="delete_group.php?id=<?= $group['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    <h2>Assign Routers to Groups</h2>
-    <table border="1">
-        <tr>
-            <th>Serial Number</th>
-            <th>Model</th>
-            <th>Current Group</th>
-            <th>Assign to Group</th>
-        </tr>
-        <?php foreach ($routers as $router): ?>
-        <tr>
-            <td><?= htmlspecialchars($router['serial_number']) ?></td>
-            <td><?= htmlspecialchars($router['model']) ?></td>
-            <td><?= htmlspecialchars($router['group_name'] ?? 'None') ?></td>
-            <td>
-                <form action="groups.php" method="post" style="display:inline;">
-                    <input type="hidden" name="router_id" value="<?= $router['id'] ?>">
-                    <select name="group_id">
-                        <option value="">None</option>
-                        <?php foreach ($groups as $group): ?>
-                            <option value="<?= $group['id'] ?>" <?= ($router['group_id'] == $group['id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($group['name']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <input type="submit" name="assign_router" value="Assign">
-                </form>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
-</body>
-</html>
+<div class="row mt-4">
+    <div class="col-md-12">
+        <h2>Assign Routers to Groups</h2>
+        <table class="table table-striped data-table">
+            <thead>
+                <tr>
+                    <th>Serial Number</th>
+                    <th>Model</th>
+                    <th>Current Group</th>
+                    <th>Assign to Group</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($routers as $router): ?>
+                <tr>
+                    <td><?= htmlspecialchars($router['serial_number']) ?></td>
+                    <td><?= htmlspecialchars($router['model']) ?></td>
+                    <td><?= htmlspecialchars($router['group_name'] ?? 'None') ?></td>
+                    <td>
+                        <form action="groups.php" method="post" class="form-inline">
+                            <input type="hidden" name="router_id" value="<?= $router['id'] ?>">
+                            <div class="form-group">
+                                <select name="group_id" class="form-control">
+                                    <option value="">None</option>
+                                    <?php foreach ($groups as $group): ?>
+                                        <option value="<?= $group['id'] ?>" <?= ($router['group_id'] == $group['id']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($group['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <button type="submit" name="assign_router" class="btn btn-primary btn-sm ml-2">Assign</button>
+                        </form>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<?php include('footer.php'); ?>

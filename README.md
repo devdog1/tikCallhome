@@ -14,7 +14,7 @@ This system provides a way to centrally manage Mikrotik routers. It allows route
 ## How to Use
 
 1.  **Set up the server:**
-    *   Deploy the files in the `server` directory to a web server with PHP and PostgreSQL.
+    *   Deploy the files in the `server` directory to a web server with PHP and PostgreSQL. Make sure the `php-ssh2` extension is installed.
     *   Import the `server/schema.sql` file into your PostgreSQL database.
     *   Rename `server/config.php.example` to `server/config.php` and edit it to set your database and SSH credentials.
     *   Set up a cron job to run `server/ssh_executor.php` periodically.
