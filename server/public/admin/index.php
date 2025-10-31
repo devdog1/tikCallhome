@@ -33,6 +33,7 @@ try {
                     <td><?= htmlspecialchars($router['ip_address']) ?></td>
                     <td><?= htmlspecialchars($router['last_seen']) ?></td>
                     <td>
+                        <button type="button" class="btn btn-info btn-sm preview-btn" data-router-id="<?= $router['id'] ?>">Preview Config</button>
                         <form action="adopt_router.php" method="post" style="display:inline;">
                             <input type="hidden" name="router_id" value="<?= $router['id'] ?>">
                             <button type="submit" class="btn btn-success btn-sm">Adopt</button>

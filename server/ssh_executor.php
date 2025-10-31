@@ -6,8 +6,20 @@ try {
     $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Get all adopted routers
-    $routers = $pdo->query("SELECT * FROM routers WHERE adopted = true")->fetchAll(PDO::FETCH_ASSOC);
+    // Check if a specific router ID was passed as a command-line argument
+    $routerId = $argv[1] ?? null;
+
+    $query = "SELECT * FROM routers WHERE adopted = true";
+    if ($routerId) {
+        $query .= " AND id = :router_id";
+    }
+    $stmt = $pdo->prepare($query);
+    if ($routerId) {
+        $stmt->execute(['router_id' => $routerId]);
+    } else {
+        $stmt->execute();
+    }
+    $routers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($routers as $router) {
         echo "Processing router: {$router['serial_number']}\n";

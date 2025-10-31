@@ -33,6 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'description' => 'Set initial admin password',
                 'target' => $router['serial_number']
             ]);
+
+            // Trigger the SSH executor for this router in the background
+            $executorPath = realpath(__DIR__ . '/../../ssh_executor.php');
+            shell_exec("php $executorPath $routerId > /dev/null 2>&1 &");
         }
 
         header("Location: index.php");
