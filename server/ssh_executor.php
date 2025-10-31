@@ -1,13 +1,6 @@
 <?php
-// Database connection details (replace with your actual credentials)
-$dbHost = 'localhost';
-$dbName = 'mikrotik_manager';
-$dbUser = 'user';
-$dbPass = 'password';
-
-// SSH connection details (replace with your actual credentials)
-$sshUser = 'admin';
-$sshPass = 'password';
+// Include the configuration file
+require_once(__DIR__ . '/config.php');
 
 try {
     $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
@@ -43,8 +36,22 @@ try {
 
         // Connect via SSH
         $connection = ssh2_connect($router['ip_address'], 22);
-        if (!$connection || !ssh2_auth_password($connection, $sshUser, $sshPass)) {
-            echo "SSH connection failed for router: {$router['serial_number']}\n";
+        if (!$connection) {
+            echo "Could not initiate SSH connection to router: {$router['serial_number']}\n";
+            continue;
+        }
+
+        $authenticated = false;
+        foreach ($sshCredentials as $cred) {
+            if (ssh2_auth_password($connection, $cred['user'], $cred['pass'])) {
+                $authenticated = true;
+                echo "Successfully authenticated to router {$router['serial_number']} with user {$cred['user']}\n";
+                break;
+            }
+        }
+
+        if (!$authenticated) {
+            echo "SSH authentication failed for router: {$router['serial_number']}\n";
             continue;
         }
 

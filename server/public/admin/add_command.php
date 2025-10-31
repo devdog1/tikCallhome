@@ -1,9 +1,6 @@
 <?php
-// Database connection details
-$dbHost = 'localhost';
-$dbName = 'mikrotik_manager';
-$dbUser = 'user';
-$dbPass = 'password';
+// Include the configuration file
+require_once('../../config..php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $command = $_POST['command'];

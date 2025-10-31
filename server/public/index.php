@@ -1,9 +1,6 @@
 <?php
-// Database connection details (replace with your actual credentials)
-$dbHost = 'localhost';
-$dbName = 'mikrotik_manager';
-$dbUser = 'user';
-$dbPass = 'password';
+// Include the configuration file
+require_once('../config.php');
 
 // Get data from the request
 $serialNumber = $_GET['serial'] ?? null;
@@ -39,6 +36,22 @@ try {
             'serial_number' => $serialNumber,
             'model' => $model,
             'ip_address' => $ipAddress
+        ]);
+        $routerId = $pdo->lastInsertId();
+
+        // Create a one-time command to set the admin password
+        $command = "/user set [find name=admin] password=\"$defaultNewPassword\"";
+        $check_command = "/user get [find name=admin] password"; // This is a simple check
+
+        $stmt = $pdo->prepare("
+            INSERT INTO commands (command, check_command, description, type, target)
+            VALUES (:command, :check_command, :description, 'serial', :target)
+        ");
+        $stmt->execute([
+            'command' => $command,
+            'check_command' => $check_command,
+            'description' => 'Set initial admin password',
+            'target' => $serialNumber
         ]);
     }
 

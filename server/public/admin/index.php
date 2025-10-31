@@ -1,9 +1,6 @@
 <?php
-// Database connection details
-$dbHost = 'localhost';
-$dbName = 'mikrotik_manager';
-$dbUser = 'user';
-$dbPass = 'password';
+// Include the configuration file
+require_once('../../config.php');
 
 try {
     $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
