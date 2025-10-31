@@ -1,0 +1,86 @@
+<?php
+// Database connection details (replace with your actual credentials)
+$dbHost = 'localhost';
+$dbName = 'mikrotik_manager';
+$dbUser = 'user';
+$dbPass = 'password';
+
+// SSH connection details (replace with your actual credentials)
+$sshUser = 'admin';
+$sshPass = 'password';
+
+try {
+    $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Get all routers
+    $routers = $pdo->query("SELECT * FROM routers")->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($routers as $router) {
+        echo "Processing router: {$router['serial_number']}\n";
+
+        // Get commands for this router
+        $stmt = $pdo->prepare("
+            SELECT c.* FROM commands c
+            LEFT JOIN router_commands rc ON c.id = rc.command_id AND rc.router_id = :router_id
+            WHERE rc.id IS NULL AND (
+                c.type = 'generic' OR
+                (c.type = 'model' AND c.target = :model) OR
+                (c.type = 'serial' AND c.target = :serial_number)
+            )
+        ");
+        $stmt->execute([
+            'router_id' => $router['id'],
+            'model' => $router['model'],
+            'serial_number' => $router['serial_number']
+        ]);
+        $commands = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($commands)) {
+            echo "No new commands for this router.\n";
+            continue;
+        }
+
+        // Connect via SSH
+        $connection = ssh2_connect($router['ip_address'], 22);
+        if (!$connection || !ssh2_auth_password($connection, $sshUser, $sshPass)) {
+            echo "SSH connection failed for router: {$router['serial_number']}\n";
+            continue;
+        }
+
+        foreach ($commands as $command) {
+            echo "Processing command: {$command['command']}\n";
+
+            // If a check_command is defined, run it to see if the command needs to be executed.
+            if (!empty($command['check_command'])) {
+                $stream = ssh2_exec($connection, $command['check_command']);
+                stream_set_blocking($stream, true);
+                $output = trim(stream_get_contents($stream));
+
+                if (!empty($output)) {
+                    echo "Skipping command, check returned: $output\n";
+                    // Optionally, log that this command was skipped
+                    continue; // Skip to the next command
+                }
+            }
+
+            // Execute the main command
+            echo "Executing command: {$command['command']}\n";
+            $stream = ssh2_exec($connection, $command['command']);
+            stream_set_blocking($stream, true);
+            $output = stream_get_contents($stream);
+
+            // Log the command execution
+            $stmt = $pdo->prepare("INSERT INTO router_commands (router_id, command_id, executed_at) VALUES (:router_id, :command_id, NOW())");
+            $stmt->execute([
+                'router_id' => $router['id'],
+                'command_id' => $command['id']
+            ]);
+        }
+    }
+
+} catch (PDOException $e) {
+    echo "Database error: " . $e->getMessage() . "\n";
+} catch (Exception $e) {
+    echo "An error occurred: " . $e->getMessage() . "\n";
+}
