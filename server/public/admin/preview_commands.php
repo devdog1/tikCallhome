@@ -1,13 +1,11 @@
 <?php
-require_once('../../config.php');
+require_once('../../database.php');
 
 header('Content-Type: application/json');
 
 if (isset($_GET['router_id'])) {
     $routerId = $_GET['router_id'];
     try {
-        $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Get the router's details
         $stmt = $pdo->prepare("SELECT * FROM routers WHERE id = :id");

@@ -1,10 +1,8 @@
 <?php
-require_once('../../config.php');
+require_once('../../database.php');
 include('header.php');
 
 try {
-    $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $unadopted_routers = $pdo->query("SELECT * FROM routers WHERE adopted = false ORDER BY last_seen DESC")->fetchAll(PDO::FETCH_ASSOC);
     $commands = $pdo->query("SELECT * FROM commands ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {

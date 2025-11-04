@@ -1,13 +1,10 @@
 <?php
-require_once('../config.php');
+require_once('../database.php');
 
 if (isset($_GET['serial'])) {
     $serialNumber = $_GET['serial'];
     $apiKey = $_GET['api_key'] ?? null;
     try {
-        $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
         // Find the router by serial number
         $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial AND adopted = true AND execution_method = 'pull'");
         $stmt->execute(['serial' => $serialNumber]);

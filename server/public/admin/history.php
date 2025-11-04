@@ -1,10 +1,8 @@
 <?php
-require_once('../../config.php');
+require_once('../../database.php');
 include('header.php');
 
 try {
-    $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $history = $pdo->query("
         SELECT rc.executed_at, r.serial_number, c.description, rc.status, rc.output
         FROM router_commands rc
