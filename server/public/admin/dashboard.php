@@ -7,7 +7,7 @@ try {
     // Get router stats
     $adopted_count = $pdo->query("SELECT COUNT(*) FROM routers WHERE adopted = true")->fetchColumn();
     $pending_count = $pdo->query("SELECT COUNT(*) FROM routers WHERE adopted = false")->fetchColumn();
-    $offline_count = $pdo->query("SELECT COUNT(*) FROM routers WHERE last_seen < NOW() - INTERVAL '5 minutes'")->fetchColumn();
+    $offline_count = $pdo->query("SELECT COUNT(*) FROM routers WHERE last_seen < NOW() - INTERVAL 5 MINUTE")->fetchColumn();
 
     // Get recent history
     $recent_history = $pdo->query("
