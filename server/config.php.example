@@ -1,5 +1,6 @@
 <?php
 // Database connection details
+$dbType = 'pgsql'; // 'pgsql' or 'mysql'
 $dbHost = 'localhost';
 $dbName = 'mikrotik_manager';
 $dbUser = 'user';

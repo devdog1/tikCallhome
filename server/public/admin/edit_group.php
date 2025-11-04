@@ -1,10 +1,8 @@
 <?php
-require_once('../../config.php');
+require_once('../../database.php');
 include('header.php');
 
 try {
-    $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $groupId = $_POST['id'];

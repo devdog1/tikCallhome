@@ -1,6 +1,6 @@
 <?php
 // Include the configuration file
-require_once('../config.php');
+require_once('../database.php');
 
 // Get data from the request
 $serialNumber = $_GET['serial'] ?? null;
@@ -15,8 +15,6 @@ if (!$serialNumber || !$model) {
 }
 
 try {
-    $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Check if the router exists
     $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial_number");

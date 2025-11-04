@@ -1,13 +1,11 @@
 <?php
 // Include the configuration file
-require_once('../../config.php');
+require_once('../../database.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $routerId = $_POST['router_id'];
 
     try {
-        $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Generate a unique API key
         $apiKey = bin2hex(random_bytes(16));

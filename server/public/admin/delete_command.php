@@ -1,10 +1,8 @@
 <?php
-require_once('../../config.php');
+require_once('../../database.php');
 
 if (isset($_GET['id'])) {
     try {
-        $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // First, delete any associations in router_commands
         $stmt = $pdo->prepare("DELETE FROM router_commands WHERE command_id = :id");

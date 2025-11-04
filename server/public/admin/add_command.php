@@ -1,6 +1,6 @@
 <?php
 // Include the configuration file
-require_once('../../config.php');
+require_once('../../database.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $command = $_POST['command'];
@@ -10,8 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $target = ($type === 'model' || $type === 'serial' || $type === 'group') ? $_POST['target'] : null;
 
     try {
-        $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $stmt = $pdo->prepare("INSERT INTO commands (command, check_command, description, type, target) VALUES (:command, :check_command, :description, :type, :target)");
         $stmt->execute([

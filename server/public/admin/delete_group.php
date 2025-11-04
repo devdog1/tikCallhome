@@ -1,11 +1,9 @@
 <?php
-require_once('../../config.php');
+require_once('../../database.php');
 
 if (isset($_GET['id'])) {
     $groupId = $_GET['id'];
     try {
-        $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Disassociate routers from the group
         $stmt = $pdo->prepare("UPDATE routers SET group_id = NULL WHERE group_id = :group_id");

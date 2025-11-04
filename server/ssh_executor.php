@@ -1,11 +1,8 @@
 <?php
 // Include the configuration file
-require_once(__DIR__ . '/config.php');
+require_once(__DIR__ . '/database.php');
 
 try {
-    $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
     // Check if a specific router ID was passed as a command-line argument
     $routerId = $argv[1] ?? null;
 

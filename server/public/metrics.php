@@ -1,11 +1,9 @@
 <?php
-require_once('../config.php');
+require_once('../database.php');
 
 header('Content-Type: text/plain; version=0.0.4');
 
 try {
-    $pdo = new PDO("pgsql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // --- Gauges for router status ---
     $adopted_count = $pdo->query("SELECT COUNT(*) FROM routers WHERE adopted = true")->fetchColumn();
