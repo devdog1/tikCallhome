@@ -52,20 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            // Create the initial password command
-            $command = "/user set [find name=admin] password=\"$defaultNewPassword\"";
-            $check_command = "/user get [find name=admin] password"; // Simple check
-
-            $stmt = $pdo->prepare("
-                INSERT INTO commands (command, check_command, description, type, target)
-                VALUES (:command, :check_command, :description, 'serial', :target)
-            ");
-            $stmt->execute([
-                'command' => $command,
-                'check_command' => $check_command,
-                'description' => 'Set initial admin password',
-                'target' => $router['serial_number']
-            ]);
 
             // Trigger the SSH executor for this router in the background
             $executorPath = realpath(__DIR__ . '/../../ssh_executor.php');

@@ -13,5 +13,3 @@ $sshCredentials = [
     // ['user' => 'another_user', 'pass' => 'another_password'],
 ];
 
-// Default new password for routers on first check-in
-$defaultNewPassword = 'a_strong_password_123!';
