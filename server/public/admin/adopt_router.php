@@ -8,21 +8,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
 
-        // Generate a unique API key
+        // Generate a unique API key and a secure password for the managed admin user
         $apiKey = bin2hex(random_bytes(16));
+        $managedPassword = bin2hex(random_bytes(12)); // 24 characters long
 
-        // Mark the router as adopted, save the API key, and set the name
-        $stmt = $pdo->prepare("UPDATE routers SET adopted = true, api_key = :api_key, name = :name WHERE id = :id");
-        $stmt->execute(['api_key' => $apiKey, 'name' => $routerName, 'id' => $routerId]);
+        // Mark the router as adopted, save the API key, set the name, and store the password
+        $stmt = $pdo->prepare("UPDATE routers SET adopted = true, api_key = :api_key, name = :name, local_admin_password = :password WHERE id = :id");
+        $stmt->execute([
+            'api_key' => $apiKey,
+            'name' => $routerName,
+            'password' => $managedPassword,
+            'id' => $routerId
+        ]);
+
+        // Get the router's serial number for command targeting
+        $stmt_get_serial = $pdo->prepare("SELECT serial_number FROM routers WHERE id = :id");
+        $stmt_get_serial->execute(['id' => $routerId]);
+        $serial = $stmt_get_serial->fetchColumn();
 
         // Create the command to set the system identity
         $identityCommand = "/system identity set name=\"$routerName\"";
         $stmt = $pdo->prepare("INSERT INTO commands (command, description, type, target) VALUES (:command, :desc, 'serial', :target)");
-        // We need the serial number for the target, so let's get it first.
-        $stmt_get_serial = $pdo->prepare("SELECT serial_number FROM routers WHERE id = :id");
-        $stmt_get_serial->execute(['id' => $routerId]);
-        $serial = $stmt_get_serial->fetchColumn();
         $stmt->execute(['command' => $identityCommand, 'desc' => "Set System Name", 'target' => $serial]);
+
+        // Create the command to add the managed admin user
+        $adminUserCommand = "/user add name=managed-admin group=full password=\"$managedPassword\"";
+        $stmt = $pdo->prepare("INSERT INTO commands (command, description, type, target) VALUES (:command, :desc, 'serial', :target)");
+        $stmt->execute(['command' => $adminUserCommand, 'desc' => "Create Managed Admin User", 'target' => $serial]);
 
         // Get the router's full details
         $stmt = $pdo->prepare("SELECT * FROM routers WHERE id = :id");

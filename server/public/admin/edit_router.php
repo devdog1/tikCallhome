@@ -55,6 +55,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="checkbox" class="form-check-input" id="adopted" name="adopted" <?= $router['adopted'] ? 'checked' : '' ?>>
         <label class="form-check-label" for="adopted">Adopted</label>
     </div>
+
+    <?php if ($user_handler->hasPermission($_SESSION['user_id'], 'manage_routers') && !empty($router['local_admin_password'])): ?>
+    <div class="form-group mt-3">
+        <label for="local_admin_password">Managed Admin Password</label>
+        <input type="text" class="form-control" id="local_admin_password" name="local_admin_password" value="<?= htmlspecialchars($router['local_admin_password']) ?>" readonly>
+        <small class="form-text text-muted">This password is managed by the system. It was set during adoption.</small>
+    </div>
+    <?php endif; ?>
+
     <button type="submit" class="btn btn-primary mt-3">Update Router</button>
 </form>
 

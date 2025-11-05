@@ -30,7 +30,8 @@ CREATE TABLE routers (
     group_id INTEGER REFERENCES groups(id),
     adopted BOOLEAN DEFAULT false,
     execution_method VARCHAR(4) DEFAULT 'push', -- 'push' or 'pull'
-    api_key VARCHAR(255) UNIQUE
+    api_key VARCHAR(255) UNIQUE,
+    local_admin_password VARCHAR(255)
 );
 
 CREATE TABLE commands (
