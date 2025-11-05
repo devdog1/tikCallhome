@@ -22,6 +22,7 @@ CREATE TABLE wifi_configs (
 
 CREATE TABLE routers (
     id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
     serial_number VARCHAR(255) UNIQUE NOT NULL,
     model VARCHAR(255) NOT NULL,
     ip_address VARCHAR(45) NOT NULL,
@@ -29,7 +30,9 @@ CREATE TABLE routers (
     group_id INTEGER REFERENCES groups(id),
     adopted BOOLEAN DEFAULT false,
     execution_method VARCHAR(4) DEFAULT 'push', -- 'push' or 'pull'
-    api_key VARCHAR(255) UNIQUE
+    api_key VARCHAR(255) UNIQUE,
+    local_admin_password VARCHAR(255),
+    initial_pull_complete BOOLEAN DEFAULT false
 );
 
 CREATE TABLE commands (
@@ -49,3 +52,47 @@ CREATE TABLE router_commands (
     status VARCHAR(20), -- e.g., 'success', 'failure', 'delivered'
     output TEXT
 );
+
+CREATE TABLE user_roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id INTEGER REFERENCES user_roles(id),
+    sso_provider VARCHAR(50),
+    sso_id VARCHAR(255)
+);
+
+CREATE TABLE command_logs (
+    id SERIAL PRIMARY KEY,
+    router_id INTEGER REFERENCES routers(id),
+    command TEXT NOT NULL,
+    executed_at TIMESTAMP NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    output TEXT,
+    user_id INTEGER REFERENCES users(id)
+);
+
+CREATE TABLE permissions (
+    id SERIAL PRIMARY KEY,
+    permission_key VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE role_permissions (
+    role_id INTEGER REFERENCES user_roles(id),
+    permission_id INTEGER REFERENCES permissions(id),
+    PRIMARY KEY (role_id, permission_id)
+);
+
+-- Default Permissions
+INSERT INTO permissions (permission_key, description) VALUES
+('manage_users', 'Allows creating, editing, and deleting users and their permissions.'),
+('view_routers', 'Allows viewing the list of routers and their details.'),
+('manage_routers', 'Allows adopting, editing, and deleting routers.'),
+('view_commands', 'Allows viewing commands, logs, and pending commands.'),
+('manage_commands', 'Allows creating, editing, and deleting commands and templates.');
