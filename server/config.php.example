@@ -13,3 +13,10 @@ $sshCredentials = [
     // ['user' => 'another_user', 'pass' => 'another_password'],
 ];
 
+// SSO Configuration for Office 365 / Azure AD
+$ssoConfig = [
+    'clientId'          => 'YOUR_AZURE_CLIENT_ID',
+    'clientSecret'      => 'YOUR_AZURE_CLIENT_SECRET',
+    'redirectUri'       => 'http://YOUR_APP_URL/server/public/admin/sso_login.php',
+    'tenant'            => 'YOUR_AZURE_TENANT_ID', // e.g., 'common' or your tenant ID
+];

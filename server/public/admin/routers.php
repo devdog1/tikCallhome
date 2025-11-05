@@ -34,6 +34,7 @@ try {
                     <td><?= htmlspecialchars($router['last_seen']) ?></td>
                     <td>
                         <a href="edit_router.php?id=<?= $router['id'] ?>" class="btn btn-primary btn-sm">Edit</a>
+                        <a href="command_log.php?router_id=<?= $router['id'] ?>" class="btn btn-info btn-sm">View Log</a>
                         <a href="delete_router.php?id=<?= $router['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
                     </td>
                 </tr>

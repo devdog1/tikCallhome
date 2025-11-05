@@ -102,6 +102,18 @@ try {
                 'status' => $status,
                 'output' => $logOutput
             ]);
+
+            // Add to the permanent command log
+            $logStmt = $pdo->prepare("
+                INSERT INTO command_logs (router_id, command, executed_at, status, output, user_id)
+                VALUES (:router_id, :command, NOW(), :status, :output, NULL)
+            ");
+            $logStmt->execute([
+                'router_id' => $router['id'],
+                'command' => $command['command'],
+                'status' => $status,
+                'output' => $logOutput
+            ]);
         }
     }
 

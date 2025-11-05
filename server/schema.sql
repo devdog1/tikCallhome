@@ -49,3 +49,27 @@ CREATE TABLE router_commands (
     status VARCHAR(20), -- e.g., 'success', 'failure', 'delivered'
     output TEXT
 );
+
+CREATE TABLE user_roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id INTEGER REFERENCES user_roles(id),
+    sso_provider VARCHAR(50),
+    sso_id VARCHAR(255)
+);
+
+CREATE TABLE command_logs (
+    id SERIAL PRIMARY KEY,
+    router_id INTEGER REFERENCES routers(id),
+    command TEXT NOT NULL,
+    executed_at TIMESTAMP NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    output TEXT,
+    user_id INTEGER REFERENCES users(id)
+);

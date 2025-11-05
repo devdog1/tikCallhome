@@ -53,3 +53,30 @@ CREATE TABLE router_commands (
     FOREIGN KEY (router_id) REFERENCES routers(id),
     FOREIGN KEY (command_id) REFERENCES commands(id)
 );
+
+CREATE TABLE user_roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id INT,
+    sso_provider VARCHAR(50),
+    sso_id VARCHAR(255),
+    FOREIGN KEY (role_id) REFERENCES user_roles(id)
+);
+
+CREATE TABLE command_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    router_id INT,
+    command TEXT NOT NULL,
+    executed_at DATETIME NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    output TEXT,
+    user_id INT,
+    FOREIGN KEY (router_id) REFERENCES routers(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
