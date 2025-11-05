@@ -11,6 +11,10 @@
 
 <script>
 $(document).ready(function() {
+    // This is a fix to re-initialize DataTables after a jQuery reload, which can happen in some dynamic environments.
+    if ($.fn.dataTable.isDataTable('.data-table')) {
+        $('.data-table').DataTable().destroy();
+    }
     $('.data-table').DataTable();
 
     // Handle the click event for the preview button
@@ -34,6 +38,25 @@ $(document).ready(function() {
                 $('#previewModal').modal('show');
             }
         });
+    });
+
+    // Handle "Reveal" button clicks
+    $(document).on('click', '.reveal-btn', function() {
+        var $btn = $(this);
+        var $pre = $btn.siblings('.command-view');
+        var originalCommand = $pre.data('original-command');
+
+        if ($btn.text() === 'Reveal') {
+            $pre.text(originalCommand);
+            $btn.text('Hide');
+            $btn.removeClass('btn-secondary').addClass('btn-warning');
+        } else {
+            // Re-obfuscate by calling a simple client-side obfuscator
+            var obfuscated = originalCommand.replace(/(password=)(?:"([^"]*)"|([^\s]+))/gi, '$1"*****"');
+            $pre.text(obfuscated);
+            $btn.text('Reveal');
+            $btn.removeClass('btn-warning').addClass('btn-secondary');
+        }
     });
 });
 </script>

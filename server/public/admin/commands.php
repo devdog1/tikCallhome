@@ -1,5 +1,6 @@
 <?php
 require_once('../../database.php');
+require_once('../../helpers.php');
 include('header.php');
 include('check_permission.php');
 
@@ -94,7 +95,12 @@ try {
                 <?php foreach ($commands as $command): ?>
                 <tr>
                     <td><?= htmlspecialchars($command['id']) ?></td>
-                    <td><pre><?= htmlspecialchars($command['command']) ?></pre></td>
+                    <td>
+                        <pre class="command-view" data-original-command="<?= htmlspecialchars($command['command']) ?>"><?= htmlspecialchars(obfuscate_password($command['command'])) ?></pre>
+                        <?php if ($user_handler->hasPermission($_SESSION['user_id'], 'manage_commands')): ?>
+                            <button class="btn btn-secondary btn-sm reveal-btn">Reveal</button>
+                        <?php endif; ?>
+                    </td>
                     <td><pre><?= htmlspecialchars($command['check_command']) ?></pre></td>
                     <td><?= htmlspecialchars($command['description']) ?></td>
                     <td><?= htmlspecialchars($command['type']) ?></td>

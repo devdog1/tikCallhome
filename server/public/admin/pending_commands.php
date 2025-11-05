@@ -1,5 +1,6 @@
 <?php
 require_once 'header.php';
+require_once '../../helpers.php';
 require_once 'check_permission.php';
 
 check_permission('view_commands'); // Reuse 'view_commands' permission
@@ -54,7 +55,12 @@ $pending_commands = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo htmlspecialchars($pc['model']); ?></td>
                         <td><?php echo htmlspecialchars($pc['group_name'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($pc['description']); ?></td>
-                        <td><pre><?php echo htmlspecialchars($pc['command']); ?></pre></td>
+                        <td>
+                            <pre class="command-view" data-original-command="<?= htmlspecialchars($pc['command']) ?>"><?= htmlspecialchars(obfuscate_password($pc['command'])) ?></pre>
+                            <?php if ($user_handler->hasPermission($_SESSION['user_id'], 'manage_commands')): ?>
+                                <button class="btn btn-secondary btn-sm reveal-btn">Reveal</button>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                  <?php if (empty($pending_commands)): ?>

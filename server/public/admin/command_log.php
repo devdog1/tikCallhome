@@ -1,5 +1,6 @@
 <?php
 require_once 'header.php';
+require_once '../../helpers.php';
 require_once 'check_permission.php';
 
 check_permission('view_routers'); // Reuse permission from routers page
@@ -56,7 +57,12 @@ $logs = $logsStmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php foreach ($logs as $log): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($log['executed_at']); ?></td>
-                        <td><pre><?php echo htmlspecialchars($log['command']); ?></pre></td>
+                        <td>
+                            <pre class="command-view" data-original-command="<?= htmlspecialchars($log['command']) ?>"><?= htmlspecialchars(obfuscate_password($log['command'])) ?></pre>
+                            <?php if ($user_handler->hasPermission($_SESSION['user_id'], 'manage_commands')): ?>
+                                <button class="btn btn-secondary btn-sm reveal-btn">Reveal</button>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <span class="badge <?php echo $log['status'] === 'success' ? 'badge-success' : 'badge-danger'; ?>">
                                 <?php echo htmlspecialchars($log['status']); ?>
