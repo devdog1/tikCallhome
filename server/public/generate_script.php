@@ -54,20 +54,6 @@ if (isset($_GET['serial'])) {
             // Start generating the script
             $scriptContent = "# Mikrotik Command Script generated on " . date('Y-m-d H:i:s') . "\n";
 
-            // If it's the first pull, inject the API key into the script
-            if ($firstPull) {
-                $newApiKey = bin2hex(random_bytes(16));
-                $stmt = $pdo->prepare("UPDATE routers SET api_key = :api_key WHERE id = :id");
-                $stmt->execute(['api_key' => $newApiKey, 'id' => $router['id']]);
-                $scriptContent .= "# --- API Key Configuration ---\n";
-                $scriptContent .= ":global content [/file get [find name=call_home_pull.rsc] contents];\n";
-                $scriptContent .= ":global apiKeyLine [:find \$content \":local apiKey\"];\n";
-                $scriptContent .= ":global part1 [:pick \$content 0 \$apiKeyLine];\n";
-                $scriptContent .= ":global part2 [:pick \$content ([:find \$content \"\\n\" \$apiKeyLine]) ([:len \$content])];\n";
-                $scriptContent .= "/file set [find name=call_home_pull.rsc] contents=(\$part1 . \":local apiKey \\\"$newApiKey\\\"\" . \$part2);\n";
-                $scriptContent .= "# ---------------------------\n\n";
-            }
-
             foreach ($commands as $command) {
                 if (!empty($command['check_command'])) {
                     $scriptContent .= ":if ([:len [" . $command['check_command'] . "]] = 0) do={\n";
