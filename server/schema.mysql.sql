@@ -33,6 +33,7 @@ CREATE TABLE routers (
     execution_method VARCHAR(4) DEFAULT 'push', -- 'push' or 'pull'
     api_key VARCHAR(255) UNIQUE,
     local_admin_password VARCHAR(255),
+    initial_pull_complete BOOLEAN DEFAULT false,
     FOREIGN KEY (group_id) REFERENCES groups(id)
 );
 

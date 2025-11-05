@@ -4,22 +4,35 @@ require_once('../database.php');
 if (isset($_GET['serial'])) {
     $serialNumber = $_GET['serial'];
     $apiKey = $_GET['api_key'] ?? null;
+
     try {
-        // Find the router by serial number
+        // Find the router by serial number, it must be adopted and in pull mode.
         $stmt = $pdo->prepare("SELECT * FROM routers WHERE serial_number = :serial AND adopted = true AND execution_method = 'pull'");
         $stmt->execute(['serial' => $serialNumber]);
         $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($router) {
-            $firstPull = empty($router['api_key']);
-            // If it's not the first pull, the API key must be valid
-            if (!$firstPull && $router['api_key'] !== $apiKey) {
-                http_response_code(401);
-                echo "# Unauthorized.";
-                exit;
-            }
+            // Check if this is the first pull after adoption.
+            if ($router['initial_pull_complete'] == false) {
+                // This is the first pull. Generate a one-time script to set the API key.
+                $scriptContent = ":log info \"First pull after adoption. Configuring API key.\";\n\n";
+                $scriptContent .= "/file set [find name=\"call_home_pull.rsc\"] contents=\"";
+                $scriptContent .= "/tool fetch url=\\\"http://" . $serverIp . "/server/public/generate_script.php?serial=$serialNumber&api_key=" . $router['api_key'] . "\\\" dst-path=latest_commands.rsc; ";
+                $scriptContent .= "/import file-name=latest_commands.rsc;\";\n\n";
 
-            // Get all applicable, unexecuted commands
+                // Mark the initial pull as complete.
+                $updateStmt = $pdo->prepare("UPDATE routers SET initial_pull_complete = true WHERE id = :id");
+                $updateStmt->execute(['id' => $router['id']]);
+
+            } else {
+                // This is a subsequent pull. The API key must be valid.
+                if (empty($apiKey) || $router['api_key'] !== $apiKey) {
+                    http_response_code(401);
+                    echo "# Unauthorized: Invalid or missing API key.";
+                    exit;
+                }
+
+                // Get all applicable, unexecuted commands
             $stmt = $pdo->prepare("
                 SELECT c.* FROM commands c
                 LEFT JOIN router_commands rc ON c.id = rc.command_id AND rc.router_id = :router_id
