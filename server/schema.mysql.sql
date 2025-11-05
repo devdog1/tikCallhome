@@ -83,3 +83,25 @@ CREATE TABLE command_logs (
     FOREIGN KEY (router_id) REFERENCES routers(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE permissions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    permission_key VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE role_permissions (
+    role_id INT,
+    permission_id INT,
+    PRIMARY KEY (role_id, permission_id),
+    FOREIGN KEY (role_id) REFERENCES user_roles(id),
+    FOREIGN KEY (permission_id) REFERENCES permissions(id)
+);
+
+-- Default Permissions
+INSERT INTO permissions (permission_key, description) VALUES
+('manage_users', 'Allows creating, editing, and deleting users and their permissions.'),
+('view_routers', 'Allows viewing the list of routers and their details.'),
+('manage_routers', 'Allows adopting, editing, and deleting routers.'),
+('view_commands', 'Allows viewing commands, logs, and pending commands.'),
+('manage_commands', 'Allows creating, editing, and deleting commands and templates.');

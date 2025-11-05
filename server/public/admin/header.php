@@ -64,6 +64,9 @@ if (!isset($_SESSION['user_id']) && basename($_SERVER['PHP_SELF']) !== 'login.ph
                 <li class="nav-item">
                     <a class="nav-link" href="users.php">Users</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="role_permissions.php">Role Permissions</a>
+                </li>
             <?php endif; ?>
         </ul>
         <ul class="navbar-nav ml-auto">

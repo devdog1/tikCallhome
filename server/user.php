@@ -38,9 +38,24 @@ class User {
         return $stmt->fetchColumn();
     }
 
-    public function hasPermission($user_id, $permission) {
-        $role = $this->getRole($user_id);
-        $permissions = require 'permissions.php';
-        return in_array($permission, $permissions[$role] ?? []);
+    public function hasPermission($user_id, $permission_key) {
+        if (empty($user_id) || empty($permission_key)) {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*)
+            FROM users u
+            JOIN role_permissions rp ON u.role_id = rp.role_id
+            JOIN permissions p ON rp.permission_id = p.id
+            WHERE u.id = :user_id AND p.permission_key = :permission_key
+        ");
+
+        $stmt->execute([
+            'user_id' => $user_id,
+            'permission_key' => $permission_key
+        ]);
+
+        return $stmt->fetchColumn() > 0;
     }
 }

@@ -76,3 +76,23 @@ CREATE TABLE command_logs (
     output TEXT,
     user_id INTEGER REFERENCES users(id)
 );
+
+CREATE TABLE permissions (
+    id SERIAL PRIMARY KEY,
+    permission_key VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE role_permissions (
+    role_id INTEGER REFERENCES user_roles(id),
+    permission_id INTEGER REFERENCES permissions(id),
+    PRIMARY KEY (role_id, permission_id)
+);
+
+-- Default Permissions
+INSERT INTO permissions (permission_key, description) VALUES
+('manage_users', 'Allows creating, editing, and deleting users and their permissions.'),
+('view_routers', 'Allows viewing the list of routers and their details.'),
+('manage_routers', 'Allows adopting, editing, and deleting routers.'),
+('view_commands', 'Allows viewing commands, logs, and pending commands.'),
+('manage_commands', 'Allows creating, editing, and deleting commands and templates.');
