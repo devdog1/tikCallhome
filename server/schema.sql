@@ -22,6 +22,7 @@ CREATE TABLE wifi_configs (
 
 CREATE TABLE routers (
     id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
     serial_number VARCHAR(255) UNIQUE NOT NULL,
     model VARCHAR(255) NOT NULL,
     ip_address VARCHAR(45) NOT NULL,

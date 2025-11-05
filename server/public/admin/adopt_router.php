@@ -4,15 +4,25 @@ require_once('../../database.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $routerId = $_POST['router_id'];
+    $routerName = $_POST['router_name'];
 
     try {
 
         // Generate a unique API key
         $apiKey = bin2hex(random_bytes(16));
 
-        // Mark the router as adopted and save the API key
-        $stmt = $pdo->prepare("UPDATE routers SET adopted = true, api_key = :api_key WHERE id = :id");
-        $stmt->execute(['api_key' => $apiKey, 'id' => $routerId]);
+        // Mark the router as adopted, save the API key, and set the name
+        $stmt = $pdo->prepare("UPDATE routers SET adopted = true, api_key = :api_key, name = :name WHERE id = :id");
+        $stmt->execute(['api_key' => $apiKey, 'name' => $routerName, 'id' => $routerId]);
+
+        // Create the command to set the system identity
+        $identityCommand = "/system identity set name=\"$routerName\"";
+        $stmt = $pdo->prepare("INSERT INTO commands (command, description, type, target) VALUES (:command, :desc, 'serial', :target)");
+        // We need the serial number for the target, so let's get it first.
+        $stmt_get_serial = $pdo->prepare("SELECT serial_number FROM routers WHERE id = :id");
+        $stmt_get_serial->execute(['id' => $routerId]);
+        $serial = $stmt_get_serial->fetchColumn();
+        $stmt->execute(['command' => $identityCommand, 'desc' => "Set System Name", 'target' => $serial]);
 
         // Get the router's full details
         $stmt = $pdo->prepare("SELECT * FROM routers WHERE id = :id");

@@ -18,6 +18,7 @@ try {
         <table class="table table-striped data-table">
             <thead>
                 <tr>
+                    <th>Name</th>
                     <th>Serial Number</th>
                     <th>Model</th>
                     <th>IP Address</th>
@@ -28,6 +29,7 @@ try {
             <tbody>
                 <?php foreach ($adopted_routers as $router): ?>
                 <tr>
+                    <td><?= htmlspecialchars($router['name']) ?></td>
                     <td><?= htmlspecialchars($router['serial_number']) ?></td>
                     <td><?= htmlspecialchars($router['model']) ?></td>
                     <td><?= htmlspecialchars($router['ip_address']) ?></td>
@@ -54,6 +56,7 @@ try {
                     <th>Model</th>
                     <th>IP Address</th>
                     <th>Last Seen</th>
+                    <th>Name</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -65,9 +68,14 @@ try {
                     <td><?= htmlspecialchars($router['ip_address']) ?></td>
                     <td><?= htmlspecialchars($router['last_seen']) ?></td>
                     <td>
-                        <button type="button" class="btn btn-info btn-sm preview-btn" data-router-id="<?= $router['id'] ?>">Preview Config</button>
-                        <form action="adopt_router.php" method="post" style="display:inline;">
+                        <form action="adopt_router.php" method="post" class="form-inline">
                             <input type="hidden" name="router_id" value="<?= $router['id'] ?>">
+                            <div class="form-group">
+                                <input type="text" name="router_name" class="form-control form-control-sm" placeholder="Enter name" required>
+                            </div>
+                    </td>
+                    <td>
+                            <button type="button" class="btn btn-info btn-sm preview-btn" data-router-id="<?= $router['id'] ?>">Preview</button>
                             <button type="submit" class="btn btn-success btn-sm">Adopt</button>
                         </form>
                     </td>
