@@ -1,0 +1,61 @@
+<?php
+require_once('../../database.php');
+include('header.php');
+
+$id = $_GET['id'] ?? null;
+if (!$id) {
+    header('Location: routers.php');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $serial_number = $_POST['serial_number'];
+    $model = $_POST['model'];
+    $ip_address = $_POST['ip_address'];
+    $adopted = isset($_POST['adopted']) ? 1 : 0;
+
+    try {
+        $stmt = $pdo->prepare("UPDATE routers SET serial_number = ?, model = ?, ip_address = ?, adopted = ? WHERE id = ?");
+        $stmt->execute([$serial_number, $model, $ip_address, $adopted, $id]);
+        header('Location: routers.php');
+        exit;
+    } catch (PDOException $e) {
+        die("Database error: " . $e->getMessage());
+    }
+} else {
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM routers WHERE id = ?");
+        $stmt->execute([$id]);
+        $router = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$router) {
+            header('Location: routers.php');
+            exit;
+        }
+    } catch (PDOException $e) {
+        die("Database error: " . $e->getMessage());
+    }
+}
+?>
+
+<h2>Edit Router</h2>
+<form method="post">
+    <div class="form-group">
+        <label for="serial_number">Serial Number</label>
+        <input type="text" class="form-control" id="serial_number" name="serial_number" value="<?= htmlspecialchars($router['serial_number']) ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="model">Model</label>
+        <input type="text" class="form-control" id="model" name="model" value="<?= htmlspecialchars($router['model']) ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="ip_address">IP Address</label>
+        <input type="text" class="form-control" id="ip_address" name="ip_address" value="<?= htmlspecialchars($router['ip_address']) ?>" required>
+    </div>
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="adopted" name="adopted" <?= $router['adopted'] ? 'checked' : '' ?>>
+        <label class="form-check-label" for="adopted">Adopted</label>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Update Router</button>
+</form>
+
+<?php include('footer.php'); ?>

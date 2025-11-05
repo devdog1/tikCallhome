@@ -18,7 +18,10 @@
                 <a class="nav-link" href="dashboard.php">Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="index.php">Routers & Commands</a>
+                <a class="nav-link" href="routers.php">Routers</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="commands.php">Commands</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="groups.php">Groups</a>
