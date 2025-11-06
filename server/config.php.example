@@ -30,3 +30,7 @@ $pullScriptUrl = 'YOUR_FULL_PULL_SCRIPT_URL_HERE';
 // This must be accessible from the routers.
 // Example: 'https://1.2.3.4/server/public/adopt_script.php'
 $adoptScriptUrl = 'YOUR_FULL_ADOPT_SCRIPT_URL_HERE';
+
+// A pre-shared key that the router must provide during the initial adoption call
+// for an extra layer of security. This key is injected into the initial script.
+$adoptionPsk = 'your-secure-preshared-key';

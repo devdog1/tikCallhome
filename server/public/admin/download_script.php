@@ -11,6 +11,7 @@ if (isset($_GET['script'])) {
         // Replace placeholders with actual URLs from config
         $script_content = str_replace('%%ADOPT_SCRIPT_URL%%', $adoptScriptUrl, $script_content);
         $script_content = str_replace('%%PULL_SCRIPT_URL%%', $pullScriptUrl, $script_content);
+        $script_content = str_replace('%%ADOPTION_PSK%%', $adoptionPsk, $script_content);
 
         // Serve the script as a download
         header('Content-Type: application/octet-stream');
