@@ -10,6 +10,8 @@ check_permission('view_commands'); // Reuse 'view_commands' permission
 // any that already have a corresponding entry in the router_commands table.
 $stmt = $pdo->prepare("
     SELECT
+        r.id as router_id,
+        c.id as command_id,
         r.serial_number,
         r.model,
         c.command,
@@ -46,6 +48,7 @@ $pending_commands = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>Group</th>
                     <th>Command Description</th>
                     <th>Command</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,11 +64,14 @@ $pending_commands = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <button class="btn btn-secondary btn-sm reveal-btn">Reveal</button>
                             <?php endif; ?>
                         </td>
+                        <td>
+                            <a href="cancel_pending_command.php?router_id=<?= $pc['router_id'] ?>&command_id=<?= $pc['command_id'] ?>" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to cancel this command for this router?')">Cancel</a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                  <?php if (empty($pending_commands)): ?>
                     <tr>
-                        <td colspan="5" class="text-center">No pending commands found.</td>
+                        <td colspan="6" class="text-center">No pending commands found.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>

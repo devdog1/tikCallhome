@@ -46,6 +46,7 @@ try {
                     <td>
                         <a href="edit_router.php?id=<?= $router['id'] ?>" class="btn btn-primary btn-sm">Edit</a>
                         <a href="command_log.php?router_id=<?= $router['id'] ?>" class="btn btn-info btn-sm">View Log</a>
+                        <a href="reset_router_commands.php?router_id=<?= $router['id'] ?>" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to reset all commands for this router? This will cause them to be re-executed.')">Reset Commands</a>
                         <a href="delete_router.php?id=<?= $router['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
                     </td>
                 </tr>
