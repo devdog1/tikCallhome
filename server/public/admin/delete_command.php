@@ -2,6 +2,10 @@
 session_start();
 require_once('../../database.php');
 require_once('../../helpers.php');
+require_once '../../user.php';
+
+$user_handler = new User($pdo);
+
 require_once 'check_permission.php';
 
 check_permission('manage_commands');
