@@ -3,15 +3,13 @@ require_once(__DIR__ . '/../config.php');
 require_once(__DIR__ . '/../database.php');
 
 // This script handles the initial call-home from a pull-mode router.
-// 1. It validates the pre-shared key.
-// 2. If the router is unknown, it adds it to the database in a "pending" state.
-// 3. If the router is known but pending, it tells the router to wait.
-// 4. If the router is known and adopted, it serves the one-time script to provision the API key.
+// It captures the router's IP address and handles registration and adoption.
 
 if (isset($_GET['serial']) && isset($_GET['psk']) && isset($_GET['model'])) {
     $serialNumber = $_GET['serial'];
     $model = $_GET['model'];
     $psk = $_GET['psk'];
+    $ipAddress = $_SERVER['REMOTE_ADDR'];
 
     // 1. Validate the pre-shared key
     if ($psk !== $adoptionPsk) {
@@ -27,59 +25,57 @@ if (isset($_GET['serial']) && isset($_GET['psk']) && isset($_GET['model'])) {
         $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$router) {
-            // 2. Router is unknown, add it to the database as pending
+            // 2. Router is unknown, add it as pending with its IP and current time
             $insertStmt = $pdo->prepare(
-                "INSERT INTO routers (serial_number, model, adopted, execution_method, initial_pull_complete) VALUES (:serial, :model, false, 'pull', false)"
+                "INSERT INTO routers (serial_number, model, ip_address, last_seen, adopted, execution_method, initial_pull_complete) VALUES (:serial, :model, :ip, NOW(), false, 'pull', false)"
             );
-            $insertStmt->execute(['serial' => $serialNumber, 'model' => $model]);
+            $insertStmt->execute(['serial' => $serialNumber, 'model' => $model, 'ip' => $ipAddress]);
 
             header('Content-Type: text/plain');
-            echo "# New router registered. Waiting for adoption approval from an administrator.";
+            echo "# New router registered. Waiting for adoption approval.";
 
-        } else if ($router['adopted'] == false) {
-            // 3. Router is known but still pending adoption
-            header('Content-Type: text/plain');
-            echo "# Router is pending adoption. Waiting for approval.";
+        } else {
+            // Router is known, update its IP and last_seen timestamp
+            $updateIpStmt = $pdo->prepare("UPDATE routers SET ip_address = :ip, last_seen = NOW() WHERE id = :id");
+            $updateIpStmt->execute(['ip' => $ipAddress, 'id' => $router['id']]);
 
-        } else if ($router['adopted'] == true && $router['initial_pull_complete'] == false) {
-            // 4. Router is adopted and ready for API key provisioning
+            if ($router['adopted'] == false) {
+                // 3. Router is still pending adoption
+                header('Content-Type: text/plain');
+                echo "# Router is pending adoption. Waiting for approval.";
 
-            $newScriptContent = <<<MIKROTIK
+            } else if ($router['initial_pull_complete'] == false) {
+                // 4. Router is adopted and ready for API key provisioning
+                $newScriptContent = <<<MIKROTIK
 # Mikrotik Call-Home Script for PULL Method (API Key Provisioned)
-
 :local serverUrl "{$pullScriptUrl}"
 :local apiKey "{$router['api_key']}"
 :local serialNumber [/system routerboard get serial-number]
-
-# Fetch and Run Command Script
 :local scriptUrl "\\\$serverUrl?serial=\\\$serialNumber&api_key=\\\$apiKey"
 :local scriptName "commands.rsc"
-
 /tool fetch url=\\\$scriptUrl dst-path=\\\$scriptName mode=https
-
 :if ([:len [/file find name=\\\$scriptName]] > 0) do={
     /log info "Downloaded new command script, importing..."
     /import \\\$scriptName
     /file remove \\\$scriptName
     /log info "Script import complete."
-} else {
-    /log info "No new command script downloaded."
-}
+} else { /log info "No new command script downloaded." }
 MIKROTIK;
 
-            $onetimeScript = ":log info \"Adoption complete. Provisioning API key and pull script.\";\r\n";
-            $onetimeScript .= "/file set [find name=\"call_home_pull.rsc\"] contents='" . str_replace("'", "\\'", $newScriptContent) . "';\r\n";
+                $onetimeScript = ":log info \"Adoption complete. Provisioning API key.\";\r\n";
+                $onetimeScript .= "/file set [find name=\"call_home_pull.rsc\"] contents='" . str_replace("'", "\\'", $newScriptContent) . "';\r\n";
 
-            $updateStmt = $pdo->prepare("UPDATE routers SET initial_pull_complete = true WHERE id = :id");
-            $updateStmt->execute(['id' => $router['id']]);
+                $updateStmt = $pdo->prepare("UPDATE routers SET initial_pull_complete = true WHERE id = :id");
+                $updateStmt->execute(['id' => $router['id']]);
 
-            header('Content-Type: text/plain');
-            echo $onetimeScript;
+                header('Content-Type: text/plain');
+                echo $onetimeScript;
 
-        } else {
-            // Router is adopted and has already been provisioned
-            header('Content-Type: text/plain');
-            echo "# Router already provisioned.";
+            } else {
+                // 5. Router is adopted and provisioned, just checking in
+                header('Content-Type: text/plain');
+                echo "# Router check-in successful.";
+            }
         }
 
     } catch (PDOException $e) {
