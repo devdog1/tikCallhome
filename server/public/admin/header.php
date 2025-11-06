@@ -23,11 +23,11 @@ if (!isset($_SESSION['user_id']) && basename($_SERVER['PHP_SELF']) !== 'login.ph
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="dashboard.php">Mikrotik Manager</a>
+    <a class="navbar-brand" href="index.php">Mikrotik Manager</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link" href="dashboard.php">Dashboard</a>
+                <a class="nav-link" href="index.php">Dashboard</a>
             </li>
             <?php if ($user_handler->hasPermission($_SESSION['user_id'], 'view_routers')): ?>
                 <li class="nav-item">

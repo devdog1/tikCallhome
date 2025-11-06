@@ -17,16 +17,16 @@ $sshCredentials = [
 $ssoConfig = [
     'clientId'          => 'YOUR_AZURE_CLIENT_ID',
     'clientSecret'      => 'YOUR_AZURE_CLIENT_SECRET',
-    'redirectUri'       => 'http://YOUR_APP_URL/server/public/admin/sso_login.php',
+    'redirectUri'       => 'https://YOUR_APP_URL/server/public/admin/sso_login.php',
     'tenant'            => 'YOUR_AZURE_TENANT_ID', // e.g., 'common' or your tenant ID
 ];
 
 // The full URL that pull-based routers will use to fetch their commands after adoption.
 // This must be accessible from the routers.
-// Example: 'http://1.2.3.4/server/public/pull_commands.php'
+// Example: 'https://1.2.3.4/server/public/pull_commands.php'
 $pullScriptUrl = 'YOUR_FULL_PULL_SCRIPT_URL_HERE';
 
 // The full URL that routers will use for their initial adoption script.
 // This must be accessible from the routers.
-// Example: 'http://1.2.3.4/server/public/adopt_script.php'
+// Example: 'https://1.2.3.4/server/public/adopt_script.php'
 $adoptScriptUrl = 'YOUR_FULL_ADOPT_SCRIPT_URL_HERE';

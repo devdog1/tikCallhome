@@ -2,7 +2,7 @@
 
 # --- Configuration ---
 # Set the URL of your call-home server.
-:local serverUrl "http://your-call-home-server.com/public/index.php"
+:local serverUrl "%%ADOPT_SCRIPT_URL%%"
 # Set the API Key for this router (leave blank for first check-in).
 :local apiKey ""
 # Set the IP address or domain of your call-home server for the firewall rule.
