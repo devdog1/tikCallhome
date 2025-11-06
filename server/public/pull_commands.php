@@ -49,7 +49,7 @@ if (isset($_GET['serial']) && isset($_GET['api_key'])) {
 
             // Serve the script as a file
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=\"commands.rsc\"');
+            header('Content-Disposition: attachment; filename="commands.rsc"');
             echo $scriptContent;
 
         } else {
