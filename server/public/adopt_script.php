@@ -6,8 +6,16 @@ require_once(__DIR__ . '/../database.php');
 // It responds with a one-time script that replaces the router's existing
 // 'call_home_pull.rsc' with a new version containing the API key.
 
-if (isset($_GET['serial'])) {
+if (isset($_GET['serial']) && isset($_GET['psk'])) {
     $serialNumber = $_GET['serial'];
+    $psk = $_GET['psk'];
+
+    // Validate the pre-shared key
+    if ($psk !== $adoptionPsk) {
+        http_response_code(401);
+        echo "# Unauthorized: Invalid pre-shared key.";
+        exit;
+    }
 
     try {
         // Find the router by serial number. It must be adopted, in pull mode,
@@ -20,8 +28,6 @@ if (isset($_GET['serial'])) {
             // The router is valid and ready for the second stage of adoption.
 
             // 1. Generate the new content for the 'call_home_pull.rsc' file.
-            // This content will be a complete script that calls home with the API key
-            // and fetches pending commands.
             $newScriptContent = <<<MIKROTIK
 # Mikrotik Call-Home Script for PULL Method (API Key Provisioned)
 
@@ -30,17 +36,17 @@ if (isset($_GET['serial'])) {
 :local serialNumber [/system routerboard get serial-number]
 
 # Fetch and Run Command Script
-:local scriptUrl "\$serverUrl?serial=\$serialNumber&api_key=\$apiKey"
+:local scriptUrl "\\\$serverUrl?serial=\\\$serialNumber&api_key=\\\$apiKey"
 :local scriptName "commands.rsc"
 
 # Fetch the script
-/tool fetch url=\$scriptUrl dst-path=\$scriptName mode=https
+/tool fetch url=\\\$scriptUrl dst-path=\\\$scriptName mode=https
 
 # If the script was downloaded, import it
-:if ([:len [/file find name=\$scriptName]] > 0) do={
+:if ([:len [/file find name=\\\$scriptName]] > 0) do={
     /log info "Downloaded new command script, importing..."
-    /import \$scriptName
-    /file remove \$scriptName
+    /import \\\$scriptName
+    /file remove \\\$scriptName
     /log info "Script import complete."
 } else {
     /log info "No new command script downloaded."
@@ -48,8 +54,6 @@ if (isset($_GET['serial'])) {
 MIKROTIK;
 
             // 2. Create the one-time script to be executed by the router.
-            // This script replaces the content of the existing file.
-            // We use single quotes and escape internal quotes carefully.
             $onetimeScript = ":log info \"Adoption complete. Provisioning API key and pull script.\";\r\n";
             $onetimeScript .= "/file set [find name=\"call_home_pull.rsc\"] contents='" . str_replace("'", "\\'", $newScriptContent) . "';\r\n";
 
@@ -68,10 +72,9 @@ MIKROTIK;
         }
     } catch (PDOException $e) {
         http_response_code(500);
-        // In a production environment, you would log this error, not echo it.
         echo "# Database error.";
     }
 } else {
     http_response_code(400);
-    echo "# No serial number provided.";
+    echo "# Serial number and pre-shared key are required.";
 }
