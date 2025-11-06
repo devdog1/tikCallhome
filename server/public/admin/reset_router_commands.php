@@ -1,5 +1,5 @@
 <?php
-require_once '../../database.php';
+require_once 'header.php';
 require_once '../../helpers.php';
 require_once 'check_permission.php';
 
