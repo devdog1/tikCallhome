@@ -9,7 +9,7 @@ check_permission('manage_routers');
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
     try {
-        log_user_action($pdo, $_SESSION['user_id'], $id, "Router deleted");
+        $pdo->beginTransaction();
 
         // First, delete related commands to maintain referential integrity
         $stmt = $pdo->prepare("DELETE FROM router_commands WHERE router_id = ?");
@@ -20,11 +20,19 @@ if (isset($_GET['id'])) {
 
         $stmt = $pdo->prepare("DELETE FROM routers WHERE id = ?");
         $stmt->execute([$id]);
-        header("Location: routers.php");
-        exit;
+
+        log_user_action($pdo, $_SESSION['user_id'], $id, "Router deleted");
+
+        $pdo->commit();
+
+        $_SESSION['success_message'] = "Router deleted successfully.";
+
     } catch (PDOException $e) {
-        die("Database error: " . $e->getMessage());
+        $pdo->rollBack();
+        $_SESSION['error_message'] = "Database error: " . $e->getMessage();
     }
+    header("Location: routers.php");
+    exit;
 } else {
     header("Location: routers.php");
     exit;
