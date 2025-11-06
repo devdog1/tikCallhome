@@ -1,5 +1,6 @@
 <?php
-require_once('config.php');
+// Use __DIR__ to ensure the path to config.php is always relative to this file's location.
+require_once(__DIR__ . '/config.php');
 
 try {
     if ($dbType === 'mysql') {

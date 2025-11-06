@@ -1,9 +1,9 @@
 <?php
 require_once('../database.php');
 
-if (isset($_GET['serial'])) {
+if (isset($_GET['serial']) && isset($_GET['api_key'])) {
     $serialNumber = $_GET['serial'];
-    $apiKey = $_GET['api_key'] ?? null;
+    $apiKey = $_GET['api_key'];
 
     try {
         // Find the router by serial number, it must be adopted and in pull mode.
@@ -11,28 +11,8 @@ if (isset($_GET['serial'])) {
         $stmt->execute(['serial' => $serialNumber]);
         $router = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($router) {
-            // Check if this is the first pull after adoption.
-            if ($router['initial_pull_complete'] == false) {
-                // This is the first pull. Generate a one-time script to set the API key.
-                $scriptContent = ":log info \"First pull after adoption. Configuring API key.\";\n\n";
-                $scriptContent .= "/file set [find name=\"call_home_pull.rsc\"] contents=\"";
-                $scriptContent .= "/tool fetch url=\\\"http://" . $serverIp . "/server/public/generate_script.php?serial=$serialNumber&api_key=" . $router['api_key'] . "\\\" dst-path=latest_commands.rsc; ";
-                $scriptContent .= "/import file-name=latest_commands.rsc;\";\n\n";
-
-                // Mark the initial pull as complete.
-                $updateStmt = $pdo->prepare("UPDATE routers SET initial_pull_complete = true WHERE id = :id");
-                $updateStmt->execute(['id' => $router['id']]);
-
-            } else {
-                // This is a subsequent pull. The API key must be valid.
-                if (empty($apiKey) || $router['api_key'] !== $apiKey) {
-                    http_response_code(401);
-                    echo "# Unauthorized: Invalid or missing API key.";
-                    exit;
-                }
-
-                // Get all applicable, unexecuted commands
+        if ($router && $router['api_key'] === $apiKey) {
+            // Get all applicable, unexecuted commands
             $stmt = $pdo->prepare("
                 SELECT c.* FROM commands c
                 LEFT JOIN router_commands rc ON c.id = rc.command_id AND rc.router_id = :router_id
@@ -69,12 +49,12 @@ if (isset($_GET['serial'])) {
 
             // Serve the script as a file
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="commands.rsc"');
+            header('Content-Disposition: attachment; filename=\"commands.rsc\"');
             echo $scriptContent;
 
         } else {
-            http_response_code(404);
-            echo "# Router not found or not configured for pull method.";
+            http_response_code(401);
+            echo "# Unauthorized: Invalid serial number or API key.";
         }
     } catch (PDOException $e) {
         http_response_code(500);
@@ -82,5 +62,5 @@ if (isset($_GET['serial'])) {
     }
 } else {
     http_response_code(400);
-    echo "# No serial number provided.";
+    echo "# Serial number and API key are required.";
 }
