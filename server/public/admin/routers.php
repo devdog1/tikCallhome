@@ -30,8 +30,7 @@ try {
 <div class="row mb-4">
     <div class="col-md-12">
         <h2>Initial Router Scripts</h2>
-        <p>Download these scripts and apply them to your Mikrotik routers to have them call home for adoption.</p>
-        <a href="download_script.php?script=call_home.rsc" class="btn btn-primary">Download Push Script</a>
+        <p>Download this script and apply it to your Mikrotik routers to have them call home for adoption.</p>
         <a href="download_script.php?script=call_home_pull.rsc" class="btn btn-secondary">Download Pull Script</a>
     </div>
 </div>

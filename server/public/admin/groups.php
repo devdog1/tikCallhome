@@ -12,9 +12,6 @@ try {
         } elseif (isset($_POST['assign_router'])) {
             $stmt = $pdo->prepare("UPDATE routers SET group_id = :group_id WHERE id = :router_id");
             $stmt->execute(['group_id' => $_POST['group_id'] ?: null, 'router_id' => $_POST['router_id']]);
-        } elseif (isset($_POST['set_method'])) {
-            $stmt = $pdo->prepare("UPDATE routers SET execution_method = :method WHERE id = :router_id");
-            $stmt->execute(['method' => $_POST['method'], 'router_id' => $_POST['router_id']]);
         }
         header("Location: groups.php");
         exit;
@@ -98,16 +95,7 @@ try {
                     <td><code><?= htmlspecialchars($router['api_key']) ?></code></td>
                     <td><?= htmlspecialchars($router['group_name'] ?? 'None') ?></td>
                     <td>
-                        <form action="groups.php" method="post" class="form-inline">
-                            <input type="hidden" name="router_id" value="<?= $router['id'] ?>">
-                            <div class="form-group">
-                                <select name="method" class="form-control">
-                                    <option value="push" <?= ($router['execution_method'] == 'push') ? 'selected' : '' ?>>Push</option>
-                                    <option value="pull" <?= ($router['execution_method'] == 'pull') ? 'selected' : '' ?>>Pull</option>
-                                </select>
-                            </div>
-                            <button type="submit" name="set_method" class="btn btn-secondary btn-sm ml-2">Set</button>
-                        </form>
+                        Pull
                     </td>
                     <td>
                         <form action="groups.php" method="post" class="form-inline">
