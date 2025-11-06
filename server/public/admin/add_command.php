@@ -2,6 +2,7 @@
 session_start();
 require_once('../../database.php');
 require_once('../../user.php');
+require_once('../../helpers.php');
 require_once('check_permission.php');
 
 $user_handler = new User($pdo);
@@ -36,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'type' => $type,
             'target' => $target
         ]);
+
+        $commandId = $pdo->lastInsertId();
+        log_user_action($pdo, $_SESSION['user_id'], null, "Command #{$commandId} added", $command);
 
         // Redirect back to the commands page
         header("Location: commands.php");

@@ -77,6 +77,15 @@ CREATE TABLE command_logs (
     user_id INTEGER REFERENCES users(id)
 );
 
+CREATE TABLE user_actions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    router_id INTEGER REFERENCES routers(id),
+    action TEXT NOT NULL,
+    action_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    details TEXT
+);
+
 CREATE TABLE permissions (
     id SERIAL PRIMARY KEY,
     permission_key VARCHAR(255) NOT NULL UNIQUE,

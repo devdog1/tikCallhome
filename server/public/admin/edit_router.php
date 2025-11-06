@@ -1,5 +1,6 @@
 <?php
 require_once('../../database.php');
+require_once('../../helpers.php');
 include('header.php');
 
 $id = $_GET['id'] ?? null;
@@ -17,6 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $stmt = $pdo->prepare("UPDATE routers SET serial_number = ?, model = ?, ip_address = ?, adopted = ? WHERE id = ?");
         $stmt->execute([$serial_number, $model, $ip_address, $adopted, $id]);
+
+        log_user_action($pdo, $_SESSION['user_id'], $id, "Router details updated");
+
         header('Location: routers.php');
         exit;
     } catch (PDOException $e) {
