@@ -46,25 +46,43 @@ if (isset($_GET['serial']) && isset($_GET['psk']) && isset($_GET['model'])) {
 
             } else if ($router['initial_pull_complete'] == false) {
                 // 4. Router is adopted and ready for API key provisioning
-                $newScriptContent = <<<MIKROTIK
+                $apiKey = $router['api_key'];
+                $onetimeScript = <<<MIKROTIK
+# Remove previous script if it exists
+/system script remove [find name="call_home_pull4"]
+
+# Remove previous schedule for call_home_pull4 if it exists
+/system scheduler remove [find name="call_home_pull4_schedule"]
+
+# Remove any older call_home_pull schedule
+/system scheduler remove [find on-event="call_home_pull"]
+
+# Create the new script
+/system script add name="call_home_pull4" policy=read,write,test,password,sensitive,ftp,reboot,policy,sniff,romon source="\\
 # Mikrotik Call-Home Script for PULL Method (API Key Provisioned)
-:local serverUrl "{$pullScriptUrl}"
-:local apiKey "{$router['api_key']}"
+:local serverUrl \\"{$pullScriptUrl}\\"
+:local apiKey \\"{$apiKey}\\"
 :local serialNumber [/system routerboard get serial-number]
-:local scriptUrl "\\\$serverUrl?serial=\\\$serialNumber&api_key=\\\$apiKey"
-:local scriptName "commands.rsc"
+:local scriptUrl (\\\$serverUrl . \\"?serial=\\" . \\\$serialNumber . \\"&api_key=\\" . \\\$apiKey)
+:local scriptName \\"commands.rsc\\"
+
 /tool fetch url=\\\$scriptUrl dst-path=\\\$scriptName mode=https
-:if ([:len [/file find name=\\\$scriptName]] > 0) do={
-    /log info "Downloaded new command script, importing..."
-    /import \\\$scriptName
-    /file remove \\\$scriptName
-    /log info "Script import complete."
-} else { /log info "No new command script downloaded." }
+
+:if ([/file find name=\\\$scriptName] != \\"\\") do={
+:log info \\"Downloaded new command script, importing...\\"
+/import \\\$scriptName
+/file remove \\\$scriptName
+:log info \\"Script import complete.\\"
+} else={
+:log info \\"No new command script downloaded.\\"
+}
+"
+
+# Schedule the script every 5 minutes
+/system scheduler add name="call_home_pull4_schedule" interval=5m on-event=call_home_pull4
+
+:log info "Adoption complete. Provisioning API key."
 MIKROTIK;
-
-                $onetimeScript = ":log info \"Adoption complete. Provisioning API key.\";\r\n";
-                $onetimeScript .= "/file set [find name=\"call_home_pull.rsc\"] contents='" . str_replace("'", "\\'", $newScriptContent) . "';\r\n";
-
                 $updateStmt = $pdo->prepare("UPDATE routers SET initial_pull_complete = true WHERE id = :id");
                 $updateStmt->execute(['id' => $router['id']]);
 
