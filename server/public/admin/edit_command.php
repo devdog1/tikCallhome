@@ -1,5 +1,6 @@
 <?php
 require_once('../../database.php');
+require_once('../../helpers.php');
 include('header.php');
 
 try {
@@ -14,6 +15,9 @@ try {
             'target' => $_POST['target'],
             'id' => $_POST['id']
         ]);
+
+        log_user_action($pdo, $_SESSION['user_id'], null, "Command #" . $_POST['id'] . " updated", $_POST['command']);
+
         header("Location: index.php");
         exit;
     }

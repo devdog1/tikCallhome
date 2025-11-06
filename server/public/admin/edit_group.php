@@ -1,5 +1,6 @@
 <?php
 require_once('../../database.php');
+require_once('../../helpers.php');
 include('header.php');
 
 try {
@@ -16,6 +17,8 @@ try {
         // Update the group
         $stmt = $pdo->prepare("UPDATE groups SET name = :name, base_template_id = :template_id WHERE id = :id");
         $stmt->execute(['name' => $_POST['group_name'], 'template_id' => $newTemplateId, 'id' => $groupId]);
+
+        log_user_action($pdo, $_SESSION['user_id'], null, "Group #" . $groupId . " updated. Name: " . $_POST['group_name'] . ", Template ID: " . $newTemplateId);
 
         // If the template has changed, reset the execution history for the old template
         if ($oldGroup['base_template_id'] != $newTemplateId && $oldGroup['base_template_id'] != null) {

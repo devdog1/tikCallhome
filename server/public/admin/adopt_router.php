@@ -1,6 +1,7 @@
 <?php
-// Include the configuration file
+session_start();
 require_once('../../database.php');
+require_once('../../helpers.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $routerId = $_POST['router_id'];
@@ -20,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'password' => $managedPassword,
             'id' => $routerId
         ]);
+
+        log_user_action($pdo, $_SESSION['user_id'], $routerId, "Router adopted with name '{$routerName}'");
 
         // Get the router's serial number for command targeting
         $stmt_get_serial = $pdo->prepare("SELECT serial_number FROM routers WHERE id = :id");

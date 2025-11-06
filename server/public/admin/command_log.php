@@ -34,9 +34,20 @@ $logsStmt = $pdo->prepare("
 ");
 $logsStmt->execute([$routerId]);
 $logs = $logsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get user action logs for the router
+$actionsStmt = $pdo->prepare("
+    SELECT ua.*, u.username
+    FROM user_actions ua
+    LEFT JOIN users u ON ua.user_id = u.id
+    WHERE ua.router_id = ?
+    ORDER BY ua.action_time DESC
+");
+$actionsStmt->execute([$routerId]);
+$userActions = $actionsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<h2>Command Log for Router: <?php echo htmlspecialchars($router['serial_number']); ?> (<?php echo htmlspecialchars($router['model']); ?>)</h2>
+<h2>Command and Action Log for Router: <?php echo htmlspecialchars($router['serial_number']); ?> (<?php echo htmlspecialchars($router['model']); ?>)</h2>
 
 <div class="card mt-4">
     <div class="card-header">
@@ -77,12 +88,44 @@ $logs = $logsStmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
+<div class="card mt-4">
+    <div class="card-header">
+        User Action History
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-striped" id="userActionLogTable">
+            <thead>
+                <tr>
+                    <th>Action Time</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>User</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($userActions as $action): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($action['action_time']); ?></td>
+                        <td><?php echo htmlspecialchars($action['action']); ?></td>
+                        <td><pre><?php echo htmlspecialchars($action['details']); ?></pre></td>
+                        <td><?php echo htmlspecialchars($action['username'] ?? 'System'); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <?php require_once 'footer.php'; ?>
 
 <script>
 $(document).ready(function() {
     $('#commandLogTable').DataTable({
         "order": [[ 0, "desc" ]] // Order by the first column (Executed At) descending
+    });
+
+    $('#userActionLogTable').DataTable({
+        "order": [[ 0, "desc" ]] // Order by the first column (Action Time) descending
     });
 });
 </script>

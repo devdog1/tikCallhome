@@ -84,6 +84,17 @@ CREATE TABLE command_logs (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE user_actions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    router_id INT,
+    action TEXT NOT NULL,
+    action_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    details TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (router_id) REFERENCES routers(id)
+);
+
 CREATE TABLE permissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     permission_key VARCHAR(255) NOT NULL UNIQUE,

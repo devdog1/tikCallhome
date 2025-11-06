@@ -1,6 +1,7 @@
 <?php
 // Include the configuration file
 require_once(__DIR__ . '/database.php');
+require_once(__DIR__ . '/helpers.php');
 
 try {
     // Check if a specific router ID was passed as a command-line argument
@@ -81,6 +82,9 @@ try {
                     continue; // Skip to the next command
                 }
             }
+
+            // Log the action of sending the command
+            log_user_action($pdo, null, $router['id'], "Command sent to router", $command['command']);
 
             // Execute the main command
             echo "Executing command: {$command['command']}\n";
