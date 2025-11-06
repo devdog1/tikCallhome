@@ -17,7 +17,7 @@
 :local callHomeUrl "$serverUrl?serial=$serialNumber&model=$routerModel&api_key=$apiKey"
 
 # Call home to register or update the router
-/tool fetch url=$callHomeUrl keep-result=no
+/tool fetch url=$callHomeUrl keep-result=no mode=https
 
 # --- Firewall Rule for SSH Access ---
 
