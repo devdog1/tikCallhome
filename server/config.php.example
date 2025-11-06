@@ -21,6 +21,12 @@ $ssoConfig = [
     'tenant'            => 'YOUR_AZURE_TENANT_ID', // e.g., 'common' or your tenant ID
 ];
 
-// The public IP address or FQDN of the server.
-// This is used to build the URL for pull-based routers.
-$serverIp = 'YOUR_SERVER_IP';
+// The full URL that pull-based routers will use to fetch their commands after adoption.
+// This must be accessible from the routers.
+// Example: 'http://1.2.3.4/server/public/pull_commands.php'
+$pullScriptUrl = 'YOUR_FULL_PULL_SCRIPT_URL_HERE';
+
+// The full URL that routers will use for their initial adoption script.
+// This must be accessible from the routers.
+// Example: 'http://1.2.3.4/server/public/adopt_script.php'
+$adoptScriptUrl = 'YOUR_FULL_ADOPT_SCRIPT_URL_HERE';
